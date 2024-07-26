@@ -25,6 +25,15 @@ const rows = [
 ]
 export const Table = () => {
   const [open, setOpen] = useState(false)
+  const onMessageListener = (e: any) => {
+    console.log("Content script 收到消息:", e.detail)
+  }
+  useEffect(() => {
+    window.addEventListener("FROM_INJECTED", onMessageListener, false)
+    return () => {
+      window.removeEventListener("FROM_INJECTED", onMessageListener)
+    }
+  }, [])
 
   return (
     <>
