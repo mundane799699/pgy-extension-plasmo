@@ -13,8 +13,8 @@ function interceptAjax() {
     const xhr = this
     this.addEventListener("readystatechange", function (event) {
       if (xhr.readyState === 4) {
-        if (isTargetUrl(url)) {
-          sendResponseBack(url, event)
+        if (isNotesDetailUrl(url)) {
+          sendResponseBack("NOTES_DETAIL", event)
         }
       }
     })
@@ -22,18 +22,14 @@ function interceptAjax() {
   }
 }
 
-function isTargetUrl(url) {
-  return (
-    url.includes("/api/solar/cooperator/user/blogger") ||
-    url.includes("/api/solar/kol/dataV3/dataSummary") ||
-    url.includes("/api/solar/kol/dataV3/fansSummary")
-  )
+function isNotesDetailUrl(url) {
+  return url.includes("/api/solar/kol/dataV2/notesDetail")
 }
 
-function sendResponseBack(url, event) {
+function sendResponseBack(type, event) {
   window.dispatchEvent(
     new CustomEvent("FROM_INJECTED", {
-      detail: { url, responseText: event.target.responseText }
+      detail: { type, responseText: event.target.responseText }
     })
   )
 }

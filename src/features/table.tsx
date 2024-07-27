@@ -1,32 +1,108 @@
 import { Box, Modal } from "@mui/material"
 import { DataGrid, type GridColDef } from "@mui/x-data-grid"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 const columns: GridColDef[] = [
-  { field: "id", headerName: "ID", width: 70 },
-  { field: "firstName", headerName: "First name", width: 130 },
-  { field: "lastName", headerName: "Last name", width: 130 },
+  { field: "noteId", headerName: "id", width: 70 },
+  { field: "title", headerName: "标题", width: 130 },
   {
-    field: "age",
-    headerName: "Age",
+    field: "imgUrl",
+    headerName: "图片",
+    width: 150,
+    renderCell: (params) => (
+      <img
+        src={params.value}
+        alt="封面图片"
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
+    )
+  },
+  {
+    field: "readNum",
+    headerName: "阅读数",
     type: "number",
+    width: 90
+  },
+  {
+    field: "likeNum",
+    headerName: "点赞数",
+    type: "number",
+    width: 90
+  },
+  {
+    field: "collectNum",
+    headerName: "收藏数",
+    type: "number",
+    width: 90
+  },
+  {
+    field: "isAdvertise",
+    headerName: "是否广告",
+    width: 90
+  },
+  {
+    field: "isVideo",
+    headerName: "是否视频",
+    width: 90
+  },
+  {
+    field: "brandName",
+    headerName: "品牌",
+    width: 90
+  },
+  {
+    field: "date",
+    headerName: "日期",
     width: 90
   }
 ]
 
-const rows = [
-  { id: 1, lastName: "Snow", firstName: "Jon", age: 35 },
-  { id: 2, lastName: "Lannister", firstName: "Cersei", age: 42 },
-  { id: 3, lastName: "Lannister", firstName: "Jaime", age: 45 },
-  { id: 4, lastName: "Stark", firstName: "Arya", age: 16 },
-  { id: 5, lastName: "Targaryen", firstName: "Daenerys", age: 47 },
-  { id: 6, lastName: "Melisandre", firstName: null, age: 150 },
-  { id: 7, lastName: "Clifford", firstName: "Ferrara", age: 44 }
-]
 export const Table = () => {
   const [open, setOpen] = useState(false)
+  const [rows, setRows] = useState([])
+  const noteIdSetRef = useRef(new Set())
   const onMessageListener = (e: any) => {
-    console.log("Content script 收到消息:", e.detail)
+    if (e.detail.type === "NOTES_DETAIL") {
+      addNotesDetail(e.detail.responseText)
+    }
+  }
+
+  const addNotesDetail = (responseText: string) => {
+    const result = JSON.parse(responseText)
+    const { data } = result
+    const { list } = data
+    console.log("list = ", list)
+    const newData = []
+    for (const item of list) {
+      if (!noteIdSetRef.current.has(item.noteId)) {
+        const {
+          readNum,
+          likeNum,
+          collectNum,
+          isAdvertise,
+          isVideo,
+          imgUrl,
+          title,
+          brandName = "",
+          noteId,
+          date
+        } = item
+        newData.push({
+          readNum,
+          likeNum,
+          collectNum,
+          isAdvertise: isAdvertise ? "是" : "否",
+          isVideo: isVideo ? "是" : "否",
+          imgUrl,
+          title,
+          brandName,
+          noteId,
+          date
+        })
+        noteIdSetRef.current.add(noteId)
+      }
+    }
+    setRows((prev) => [...prev, ...newData])
   }
   useEffect(() => {
     window.addEventListener("FROM_INJECTED", onMessageListener, false)
@@ -39,7 +115,7 @@ export const Table = () => {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="p-2 text-sm rounded-lg transition-all border
+        className="p-2 text-sm rounded-lg transition-all border border-slate-800
       bg-slate-50 hover:bg-slate-100 text-slate-800 hover:text-blue-500">
         显示表格
       </button>
@@ -54,21 +130,22 @@ export const Table = () => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 800,
+            width: 1200,
             bgcolor: "background.paper",
             boxShadow: 24,
             p: 4
           }}>
-          <div style={{ height: 400, width: "100%" }}>
+          <div style={{ height: 800, width: "100%" }}>
             <DataGrid
               rows={rows}
               columns={columns}
+              getRowId={(row) => row.noteId}
               initialState={{
                 pagination: {
-                  paginationModel: { page: 0, pageSize: 5 }
+                  paginationModel: { page: 0, pageSize: 10 }
                 }
               }}
-              pageSizeOptions={[5, 10]}
+              pageSizeOptions={[10, 20, 30, 50, 100]}
               checkboxSelection
             />
           </div>
