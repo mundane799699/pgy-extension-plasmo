@@ -1,10 +1,12 @@
+import { isUtf8 } from "buffer"
 import { Box, Modal } from "@mui/material"
 import {
-  DataGrid,
+  DataGridPremium,
   GridToolbarContainer,
   GridToolbarExport,
+  LicenseInfo,
   type GridColDef
-} from "@mui/x-data-grid"
+} from "@mui/x-data-grid-premium"
 import { useEffect, useRef, useState } from "react"
 
 const columns: GridColDef[] = [
@@ -65,7 +67,7 @@ const columns: GridColDef[] = [
 function CustomToolbar() {
   return (
     <GridToolbarContainer>
-      <GridToolbarExport />
+      <GridToolbarExport csvOptions={{ utf8WithBom: true }} />
     </GridToolbarContainer>
   )
 }
@@ -118,6 +120,10 @@ export const Table = () => {
     setRows((prev) => [...prev, ...newData])
   }
   useEffect(() => {
+    // 付费版激活
+    LicenseInfo.setLicenseKey(
+      "e0d9bb8070ce0054c9d9ecb6e82cb58fTz0wLEU9MzI0NzIxNDQwMDAwMDAsUz1wcmVtaXVtLExNPXBlcnBldHVhbCxLVj0y"
+    )
     window.addEventListener("FROM_INJECTED", onMessageListener, false)
     return () => {
       window.removeEventListener("FROM_INJECTED", onMessageListener)
@@ -149,19 +155,15 @@ export const Table = () => {
             p: 4
           }}>
           <div style={{ height: 800, width: "100%" }}>
-            <DataGrid
+            <DataGridPremium
               rows={rows}
               columns={columns}
               getRowId={(row) => row.noteId}
-              initialState={{
-                pagination: {
-                  paginationModel: { page: 0, pageSize: 10 }
-                }
-              }}
-              pageSizeOptions={[10, 20, 30, 50, 100]}
+              pageSize={10}
+              rowsPerPageOptions={[10, 20, 50, 100]}
               checkboxSelection
-              slots={{
-                toolbar: CustomToolbar
+              components={{
+                Toolbar: CustomToolbar
               }}
             />
           </div>
