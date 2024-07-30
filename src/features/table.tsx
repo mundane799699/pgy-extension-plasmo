@@ -1,5 +1,10 @@
 import { Box, Modal } from "@mui/material"
-import { DataGrid, type GridColDef } from "@mui/x-data-grid"
+import {
+  DataGrid,
+  GridToolbarContainer,
+  GridToolbarExport,
+  type GridColDef
+} from "@mui/x-data-grid"
 import { useEffect, useRef, useState } from "react"
 
 const columns: GridColDef[] = [
@@ -56,6 +61,14 @@ const columns: GridColDef[] = [
     width: 90
   }
 ]
+
+function CustomToolbar() {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarExport />
+    </GridToolbarContainer>
+  )
+}
 
 export const Table = () => {
   const [open, setOpen] = useState(false)
@@ -147,6 +160,9 @@ export const Table = () => {
               }}
               pageSizeOptions={[10, 20, 30, 50, 100]}
               checkboxSelection
+              slots={{
+                toolbar: CustomToolbar
+              }}
             />
           </div>
         </Box>
