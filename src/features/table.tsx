@@ -1,12 +1,12 @@
-import { isUtf8 } from "buffer"
-import { Box, Modal } from "@mui/material"
+import { Box, Button, Modal } from "@mui/material"
 import {
-  DataGridPremium,
+  DataGrid,
   GridToolbarContainer,
   GridToolbarExport,
-  LicenseInfo,
   type GridColDef
-} from "@mui/x-data-grid-premium"
+} from "@mui/x-data-grid"
+import * as ExcelJS from "exceljs"
+import { saveAs } from "file-saver"
 import { useEffect, useRef, useState } from "react"
 
 const columns: GridColDef[] = [
@@ -64,14 +64,6 @@ const columns: GridColDef[] = [
   }
 ]
 
-function CustomToolbar() {
-  return (
-    <GridToolbarContainer>
-      <GridToolbarExport csvOptions={{ utf8WithBom: true }} />
-    </GridToolbarContainer>
-  )
-}
-
 export const Table = () => {
   const [open, setOpen] = useState(false)
   const [rows, setRows] = useState([])
@@ -80,6 +72,34 @@ export const Table = () => {
     if (e.detail.type === "NOTES_DETAIL") {
       addNotesDetail(e.detail.responseText)
     }
+  }
+
+  function CustomToolbar() {
+    return (
+      <GridToolbarContainer>
+        <GridToolbarExport />
+        <Button onClick={exportToExcel}>导出Excel</Button>
+      </GridToolbarContainer>
+    )
+  }
+
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet("笔记数据")
+
+    // 添加表头
+    worksheet.addRow(columns.map((col) => col.headerName))
+
+    // 添加数据
+    rows.forEach((row) => {
+      worksheet.addRow(columns.map((col) => row[col.field]))
+    })
+
+    // 生成二进制数据
+    const buffer = await workbook.xlsx.writeBuffer()
+
+    // 使用 file-saver 保存文件
+    saveAs(new Blob([buffer]), "笔记数据.xlsx")
   }
 
   const addNotesDetail = (responseText: string) => {
@@ -119,11 +139,8 @@ export const Table = () => {
     }
     setRows((prev) => [...prev, ...newData])
   }
+
   useEffect(() => {
-    // 付费版激活
-    LicenseInfo.setLicenseKey(
-      "e0d9bb8070ce0054c9d9ecb6e82cb58fTz0wLEU9MzI0NzIxNDQwMDAwMDAsUz1wcmVtaXVtLExNPXBlcnBldHVhbCxLVj0y"
-    )
     window.addEventListener("FROM_INJECTED", onMessageListener, false)
     return () => {
       window.removeEventListener("FROM_INJECTED", onMessageListener)
@@ -155,15 +172,19 @@ export const Table = () => {
             p: 4
           }}>
           <div style={{ height: 800, width: "100%" }}>
-            <DataGridPremium
+            <DataGrid
               rows={rows}
               columns={columns}
               getRowId={(row) => row.noteId}
-              pageSize={10}
-              rowsPerPageOptions={[10, 20, 50, 100]}
+              initialState={{
+                pagination: {
+                  paginationModel: { page: 0, pageSize: 10 }
+                }
+              }}
+              pageSizeOptions={[10, 20, 30, 50, 100]}
               checkboxSelection
-              components={{
-                Toolbar: CustomToolbar
+              slots={{
+                toolbar: CustomToolbar
               }}
             />
           </div>
