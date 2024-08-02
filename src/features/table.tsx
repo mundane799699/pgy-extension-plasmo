@@ -37,10 +37,26 @@ const columns: GridColDef[] = [
     width: 90
   },
   {
+    field: "likeRate",
+    headerName: "点赞率",
+    width: 90
+  },
+  {
     field: "collectNum",
     headerName: "收藏数",
     type: "number",
     width: 90
+  },
+  {
+    field: "collectRate",
+    headerName: "收藏率",
+    width: 90
+  },
+  {
+    field: "likeCollectRate",
+    headerName: "赞藏比",
+    width: 90,
+    type: "number"
   },
   {
     field: "isAdvertise",
@@ -125,7 +141,10 @@ export const Table = () => {
         newData.push({
           readNum,
           likeNum,
+          likeRate: ((likeNum / readNum) * 100).toFixed(2) + "%",
           collectNum,
+          collectRate: ((collectNum / readNum) * 100).toFixed(2) + "%",
+          likeCollectRate: (likeNum / collectNum).toFixed(2),
           isAdvertise: isAdvertise ? "是" : "否",
           isVideo: isVideo ? "是" : "否",
           imgUrl,
