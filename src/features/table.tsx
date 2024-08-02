@@ -1,4 +1,4 @@
-import { Box, Button, Modal } from "@mui/material"
+import { Box, Button, Drawer, Modal } from "@mui/material"
 import {
   DataGrid,
   GridToolbarContainer,
@@ -93,7 +93,7 @@ export const Table = () => {
   function CustomToolbar() {
     return (
       <GridToolbarContainer>
-        <GridToolbarExport />
+        {/* <GridToolbarExport /> */}
         <Button onClick={exportToExcel}>导出Excel</Button>
       </GridToolbarContainer>
     )
@@ -115,7 +115,7 @@ export const Table = () => {
     const buffer = await workbook.xlsx.writeBuffer()
 
     // 使用 file-saver 保存文件
-    saveAs(new Blob([buffer]), "笔记数据.xlsx")
+    saveAs(new Blob([buffer]), "蒲公英笔记数据.xlsx")
   }
 
   const addNotesDetail = (responseText: string) => {
@@ -169,28 +169,20 @@ export const Table = () => {
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => setOpen((prev) => !prev)}
         className="p-2 text-sm rounded-lg transition-all border border-slate-800
       bg-slate-50 hover:bg-slate-100 text-slate-800 hover:text-blue-500">
-        显示表格
+        {`${open ? "收起" : "显示"}表格(${rows.length})`}
       </button>
-      <Modal
+      <Drawer
+        anchor="right"
         open={open}
         onClose={() => setOpen(false)}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description">
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 1200,
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            p: 4
-          }}>
-          <div style={{ height: 800, width: "100%" }}>
+        PaperProps={{
+          sx: { width: "80%" }
+        }}>
+        <Box sx={{ p: 4, height: "100%" }}>
+          <div style={{ height: "calc(100% - 20px)", width: "100%" }}>
             <DataGrid
               rows={rows}
               columns={columns}
@@ -208,7 +200,7 @@ export const Table = () => {
             />
           </div>
         </Box>
-      </Modal>
+      </Drawer>
     </>
   )
 }
