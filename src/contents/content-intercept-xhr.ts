@@ -15,6 +15,8 @@ function interceptAjax() {
       if (xhr.readyState === 4) {
         if (isNotesDetailUrl(url)) {
           sendResponseBack("NOTES_DETAIL", event)
+        } else if (isBloggerInfoUrl(url)) {
+          sendResponseBack("BLOGGER_INFO", event)
         }
       }
     })
@@ -22,7 +24,11 @@ function interceptAjax() {
   }
 }
 
-function isNotesDetailUrl(url) {
+function isBloggerInfoUrl(url: string) {
+  return url.startsWith("/api/solar/cooperator/user/blogger")
+}
+
+function isNotesDetailUrl(url: string) {
   return url.includes("/api/solar/kol/dataV2/notesDetail")
 }
 

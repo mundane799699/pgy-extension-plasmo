@@ -7,6 +7,7 @@ import {
 } from "@mui/x-data-grid"
 import * as ExcelJS from "exceljs"
 import { saveAs } from "file-saver"
+import moment from "moment"
 import { useEffect, useRef, useState } from "react"
 
 const columns: GridColDef[] = [
@@ -84,9 +85,15 @@ export const Table = () => {
   const [open, setOpen] = useState(false)
   const [rows, setRows] = useState([])
   const noteIdSetRef = useRef(new Set())
-  const onMessageListener = (e: any) => {
-    if (e.detail.type === "NOTES_DETAIL") {
+  const bloggerName = useRef("")
+  const bloggerId = useRef("")
+
+  const onMessageListener = async (e: any) => {
+    const type = e.detail.type
+    if (type === "NOTES_DETAIL") {
       addNotesDetail(e.detail.responseText)
+    } else if (type === "BLOGGER_INFO") {
+      addBloggerInfo(e.detail.responseText)
     }
   }
 
@@ -113,16 +120,26 @@ export const Table = () => {
 
     // 生成二进制数据
     const buffer = await workbook.xlsx.writeBuffer()
-
+    const formattedDate = moment(new Date().getTime()).format("YYYYMMDDHHmmss")
     // 使用 file-saver 保存文件
-    saveAs(new Blob([buffer]), "蒲公英笔记数据.xlsx")
+    saveAs(
+      new Blob([buffer]),
+      `${bloggerName.current}_${bloggerId.current}_${formattedDate}.xlsx`
+    )
+  }
+
+  const addBloggerInfo = (responseText: string) => {
+    const result = JSON.parse(responseText)
+    const { data } = result
+    const { userId, name } = data
+    bloggerId.current = userId
+    bloggerName.current = name
   }
 
   const addNotesDetail = (responseText: string) => {
     const result = JSON.parse(responseText)
     const { data } = result
     const { list } = data
-    console.log("list = ", list)
     const newData = []
     for (const item of list) {
       if (!noteIdSetRef.current.has(item.noteId)) {
