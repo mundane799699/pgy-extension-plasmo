@@ -87,8 +87,24 @@ export const Table = () => {
   const noteIdSetRef = useRef(new Set())
   const bloggerName = useRef("")
   const bloggerId = useRef("")
+  const isActiveTab = useRef(false)
+
+  const checkIfActiveTab = () => {
+    return new Promise<boolean>((resolve) => {
+      chrome.runtime.sendMessage(
+        { action: "isActiveTab" },
+        function (response) {
+          resolve(response.isActive)
+        }
+      )
+    })
+  }
 
   const onMessageListener = async (e: any) => {
+    isActiveTab.current = await checkIfActiveTab()
+    if (!isActiveTab.current) {
+      return
+    }
     const type = e.detail.type
     if (type === "NOTES_DETAIL") {
       addNotesDetail(e.detail.responseText)
@@ -178,6 +194,9 @@ export const Table = () => {
 
   useEffect(() => {
     window.addEventListener("FROM_INJECTED", onMessageListener, false)
+    checkIfActiveTab().then((isActive) => {
+      isActiveTab.current = isActive
+    })
     return () => {
       window.removeEventListener("FROM_INJECTED", onMessageListener)
     }
