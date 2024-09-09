@@ -15,6 +15,7 @@
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^5.16.5",
     "@mui/x-data-grid": "^7.11.1",
+    "@plasmohq/storage": "^1.12.0",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "moment": "^2.30.1",
