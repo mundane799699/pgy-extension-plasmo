@@ -188,30 +188,28 @@ export const Table = () => {
     setDialogOpen(false)
   }
 
-  const DeleteConfirmModal = ({ open, onClose, onConfirm, title }) => {
-    return (
-      <Dialog
-        open={open}
-        onClose={onClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description">
-        <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            此操作不可撤销。
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose} color="primary">
-            Disagree
-          </Button>
-          <Button onClick={onConfirm} color="primary" autoFocus>
-            Agree
-          </Button>
-        </DialogActions>
-      </Dialog>
-    )
-  }
+  const DeleteConfirmModal = ({ open, onClose, onConfirm, title }) => (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description">
+      <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          此操作不可撤销。
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary">
+          取消
+        </Button>
+        <Button onClick={onConfirm} color="primary" autoFocus>
+          确定
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
 
   const exportToExcel = async () => {
     const workbook = new ExcelJS.Workbook()
@@ -325,7 +323,7 @@ export const Table = () => {
         onClick={() => setDrawerOpen((prev) => !prev)}
         className="p-2 text-sm rounded-lg transition-all border border-slate-800
       bg-slate-50 hover:bg-slate-100 text-slate-800 hover:text-blue-500">
-        {`${open ? "收起" : "显示"}表格(${noteList.length})`}
+        {`${drawerOpen ? "收起" : "显示"}表格(${noteList.length})`}
       </button>
       <Drawer
         anchor="right"
