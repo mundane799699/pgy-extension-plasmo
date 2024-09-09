@@ -16,7 +16,8 @@ import {
   DataGrid,
   GridToolbarContainer,
   GridToolbarExport,
-  type GridColDef
+  type GridColDef,
+  type GridRowSelectionModel
 } from "@mui/x-data-grid"
 import * as ExcelJS from "exceljs"
 import { saveAs } from "file-saver"
@@ -130,8 +131,11 @@ export const Table = () => {
   const noteIdSetRef = useRef(new Set())
   const bloggerName = useRef("")
   const bloggerId = useRef("")
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [dialogTitle, setDialogTitle] = useState("")
+  const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false)
+  const [deleteSelectedDialogOpen, setDeleteSelectedDialogOpen] =
+    useState(false)
+  const selectedBloggerList = useRef<GridRowSelectionModel>([])
+
   useEffect(() => {
     window.addEventListener("FROM_INJECTED", onMessageListener)
     storage.get("bloggerList").then((data) => {
@@ -173,19 +177,31 @@ export const Table = () => {
   }
 
   const deleteSelectedBlogger = () => {
-    setDialogOpen(true)
+    setDeleteSelectedDialogOpen(true)
   }
 
   const deleteAllBlogger = () => {
-    setDialogTitle("确定删除所有博主信息吗？")
-    setDialogOpen(true)
+    setDeleteAllDialogOpen(true)
   }
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDeleteAll = () => {
     setBloggerList([])
-    storage.set("bloggerList", [])
+    storage.remove("bloggerList")
     bloggerIdSetRef.current.clear()
-    setDialogOpen(false)
+    setDeleteAllDialogOpen(false)
+  }
+
+  const handleConfirmDeleteSelected = () => {
+    setDeleteSelectedDialogOpen(false)
+    // 删除选中博主
+    const notSelectedBloggerList = bloggerList.filter(
+      (item) => !selectedBloggerList.current.includes(item.userId)
+    )
+    setBloggerList(notSelectedBloggerList)
+    storage.set("bloggerList", notSelectedBloggerList)
+    bloggerIdSetRef.current = new Set(
+      notSelectedBloggerList.map((item) => item.userId)
+    )
   }
 
   const DeleteConfirmModal = ({ open, onClose, onConfirm, title }) => (
@@ -266,7 +282,8 @@ export const Table = () => {
       gender,
       tagsStr,
       noteSignName: noteSign ? noteSign.name : "无机构",
-      profileUrl: `https://www.xiaohongshu.com/user/profile/${userId}`
+      profileUrl: `https://www.xiaohongshu.com/user/profile/${userId}`,
+      isSelected: false
     }
     setBloggerList((prev) => {
       const newList = [bloggerInfo, ...prev]
@@ -371,6 +388,9 @@ export const Table = () => {
                 }}
                 pageSizeOptions={[10, 20, 30, 50, 100]}
                 checkboxSelection
+                onRowSelectionModelChange={(ids) => {
+                  selectedBloggerList.current = ids
+                }}
                 slots={{
                   toolbar: bloggerToolbar
                 }}
@@ -380,10 +400,16 @@ export const Table = () => {
         </Box>
       </Drawer>
       <DeleteConfirmModal
-        open={dialogOpen}
-        title={dialogTitle}
-        onClose={() => setDialogOpen(false)}
-        onConfirm={handleConfirmDelete}
+        open={deleteAllDialogOpen}
+        title={"确定删除所有博主信息吗？"}
+        onClose={() => setDeleteAllDialogOpen(false)}
+        onConfirm={handleConfirmDeleteAll}
+      />
+      <DeleteConfirmModal
+        open={deleteSelectedDialogOpen}
+        title={"确定删除所选博主信息吗？"}
+        onClose={() => setDeleteSelectedDialogOpen(false)}
+        onConfirm={handleConfirmDeleteSelected}
       />
     </>
   )
