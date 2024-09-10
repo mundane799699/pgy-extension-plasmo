@@ -7,15 +7,12 @@ import {
   DialogContentText,
   DialogTitle,
   Drawer,
-  Modal,
   Tab,
-  Tabs,
-  Typography
+  Tabs
 } from "@mui/material"
 import {
   DataGrid,
   GridToolbarContainer,
-  GridToolbarExport,
   type GridColDef,
   type GridRowSelectionModel
 } from "@mui/x-data-grid"
@@ -134,7 +131,8 @@ export const Table = () => {
   const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false)
   const [deleteSelectedDialogOpen, setDeleteSelectedDialogOpen] =
     useState(false)
-  const selectedBloggerList = useRef<GridRowSelectionModel>([])
+  const [selectedBloggerList, setSelectedBloggerList] =
+    useState<GridRowSelectionModel>([])
 
   useEffect(() => {
     window.addEventListener("FROM_INJECTED", onMessageListener)
@@ -161,7 +159,7 @@ export const Table = () => {
   function noteToolbar() {
     return (
       <GridToolbarContainer>
-        <Button onClick={exportToExcel}>导出Excel</Button>
+        <Button onClick={exportNotoExcel}>导出excel</Button>
       </GridToolbarContainer>
     )
   }
@@ -169,9 +167,13 @@ export const Table = () => {
   function bloggerToolbar() {
     return (
       <GridToolbarContainer>
-        <Button onClick={() => {}}>导出Excel</Button>
+        <Button onClick={exportBloggerExcel}>导出excel</Button>
         <Button onClick={deleteAllBlogger}>删除所有</Button>
-        <Button onClick={deleteSelectedBlogger}>删除选中</Button>
+        <Button
+          onClick={deleteSelectedBlogger}
+          disabled={selectedBloggerList.length === 0}>
+          删除选中
+        </Button>
       </GridToolbarContainer>
     )
   }
@@ -195,7 +197,7 @@ export const Table = () => {
     setDeleteSelectedDialogOpen(false)
     // 删除选中博主
     const notSelectedBloggerList = bloggerList.filter(
-      (item) => !selectedBloggerList.current.includes(item.userId)
+      (item) => !selectedBloggerList.includes(item.userId)
     )
     setBloggerList(notSelectedBloggerList)
     storage.set("bloggerList", notSelectedBloggerList)
@@ -227,7 +229,7 @@ export const Table = () => {
     </Dialog>
   )
 
-  const exportToExcel = async () => {
+  const exportNotoExcel = async () => {
     const workbook = new ExcelJS.Workbook()
     const worksheet = workbook.addWorksheet("笔记数据")
 
@@ -247,6 +249,25 @@ export const Table = () => {
       new Blob([buffer]),
       `${bloggerName.current}_${bloggerId.current}_${formattedDate}.xlsx`
     )
+  }
+
+  const exportBloggerExcel = async () => {
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet("博主数据")
+
+    // 添加表头
+    worksheet.addRow(bloggerColumns.map((col) => col.headerName))
+
+    // 添加数据
+    bloggerList.forEach((row) => {
+      worksheet.addRow(bloggerColumns.map((col) => row[col.field]))
+    })
+
+    // 生成二进制数据
+    const buffer = await workbook.xlsx.writeBuffer()
+    const formattedDate = moment(new Date().getTime()).format("YYYYMMDDHHmmss")
+    // 使用 file-saver 保存文件
+    saveAs(new Blob([buffer]), `博主数据_${formattedDate}.xlsx`)
   }
 
   const addBloggerInfo = (responseText: string) => {
@@ -389,7 +410,7 @@ export const Table = () => {
                 pageSizeOptions={[10, 20, 30, 50, 100]}
                 checkboxSelection
                 onRowSelectionModelChange={(ids) => {
-                  selectedBloggerList.current = ids
+                  setSelectedBloggerList(ids)
                 }}
                 slots={{
                   toolbar: bloggerToolbar
