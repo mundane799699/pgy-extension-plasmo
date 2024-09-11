@@ -117,7 +117,16 @@ const bloggerColumns: GridColDef[] = [
   { field: "gender", headerName: "性别", width: 90 },
   { field: "tagsStr", headerName: "标签", width: 90 },
   { field: "noteSignName", headerName: "机构", width: 90 },
-  { field: "profileUrl", headerName: "小红书主页链接", width: 400 }
+  {
+    field: "profileUrl",
+    headerName: "小红书主页",
+    width: 400,
+    renderCell: (params) => (
+      <a href={params.value} target="_blank">
+        查看
+      </a>
+    )
+  }
 ]
 
 export const Table = () => {
