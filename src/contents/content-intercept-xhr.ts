@@ -29,7 +29,7 @@ function isBloggerInfoUrl(url: string) {
 }
 
 function isNotesDetailUrl(url: string) {
-  return url.includes("/api/solar/kol/dataV2/notesDetail")
+  return url.includes("/api/solar/kol/data_v2/notes_detail")
 }
 
 function sendResponseBack(type, event) {
