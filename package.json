@@ -1,7 +1,7 @@
 {
   "name": "pgy-ext",
   "displayName": "小红书蒲公英数据导出",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "导出小红书蒲公英的笔记数据",
   "author": "mundane <799699348@qq.com>",
   "scripts": {
